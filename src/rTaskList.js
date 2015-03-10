@@ -2,64 +2,90 @@ var node = document.getElementById("taskList");
 
 function toggleDone(task){
   task.doneness = !task.doneness;
-  draw();
+}
+
+function save(task, args){
+  task.desc = args.value;
+}
+
+function addTask(task){
+  var newId = ++taskId;
+  taskList[newId] = {id: newId, desc: "", parentId: task.parentId, doneness: false, subtasks: []};
+
+  var parent = taskList[task.parentId];
+  var ix = parent.subtasks.indexOf(task.id) + 1;
+  parent.subtasks.splice(ix, 0, newId);
+}
+
+function unsubTask(task){
+  var parent = taskList[task.parentId];
+  var parentParentId = parent.parentId;
+  var parentParent = taskList[parentParentId];
+
+  var ixParent = parentParent.subtasks.indexOf(parent.id);
+  parentParent.subtasks.splice(ixParent+1, 0, task.id);
+  task.parentId = parentParentId;
+
+  var ixTask = parent.subtasks.indexOf(task.id);
+  parent.subtasks.splice(ixTask, 1);
+}
+
+function subTask(task){
+  var parent = taskList[task.parentId];
+
+  var ixTask = parent.subtasks.indexOf(task.id)
+  if (ixTask !== 0) {
+    var newParentId = parent.subtasks[ixTask-1]
+    var newParent = taskList[newParentId]
+    newParent.subtasks.push(task.id)
+
+    task.parentId = newParentId
+    parent.subtasks.splice(ixTask, 1)
+  }
+}
+
+function eventDispatch(action, task, args){
+  switch(action){
+    case "toggleDone":
+      toggleDone(task);
+      break;
+    case "save":
+      save(task, args);
+      break;
+    case "addTask":
+      addTask(task);
+      break;
+    case "unsubTask":
+      unsubTask(task);
+      break;
+    case "subTask":
+      subTask(task);
+      break;
+  }
 }
 
 var Task = React.createClass({
-  toggleDone: function() {
-    this.props.task.doneness = !this.props.task.doneness;
-    draw();
-  },
   save: function(e) {
-    this.props.task.desc = e.target.value;
+    eventDispatch("save", this.props.task, {value: e.target.value});
     draw();
   },
   handleKey: function(e) {
     //add task
     if (e.keyCode === 13) {
-      var task = this.props.task;
-      console.log(task.parentId);
-      var newId = ++taskId;
-      taskList[newId] = {id: newId, desc: "", parentId: task.parentId, doneness: false, subtasks: []};
-
-      var parent = taskList[task.parentId];
-      var ix = parent.subtasks.indexOf(task.id) + 1;
-      parent.subtasks.splice(ix, 0, newId);
+      eventDispatch("addTask", this.props.task);
     }
     //un-subtask
     else if (e.shiftKey && e.keyCode === 9) {
       e.preventDefault();
-      var task = this.props.task;
-      var parent = taskList[task.parentId];
-      var parentParentId = parent.parentId;
-      var parentParent = taskList[parentParentId];
-
-      var ixParent = parentParent.subtasks.indexOf(parent.id);
-      parentParent.subtasks.splice(ixParent+1, 0, task.id);
-      task.parentId = parentParentId;
-
-      var ixTask = parent.subtasks.indexOf(task.id);
-      parent.subtasks.splice(ixTask, 1);
+      eventDispatch("unsubTask", this.props.task);
     }
     //subtask
     else if (e.keyCode === 9) {
       e.preventDefault();
-      var task = this.props.task;
-      var parent = taskList[task.parentId];
-
-      var ixTask = parent.subtasks.indexOf(task.id)
-      if (ixTask !== 0) {
-        var newParentId = parent.subtasks[ixTask-1]
-        var newParent = taskList[newParentId]
-        newParent.subtasks.push(task.id)
-
-        task.parentId = newParentId
-        parent.subtasks.splice(ix, 1)
-      }
+      eventDispatch("subTask", this.props.task);
     }
     else if (e.ctrlKey && e.keyCode === 68) {
-      console.log("helllllllllllo")
-      toggleDone(this.props.task.value)
+      eventDispatch("toggleDone", this.props.task)
     }
     draw();
   },
