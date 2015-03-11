@@ -44,6 +44,27 @@ function subTask(task){
   }
 }
 
+function deleteTask(task) {
+  var parentId = task.parentId;
+  var ix = taskList[parentId].subtasks.indexOf(task.id);
+  taskList[parentId].subtasks.splice(ix, 1);
+
+  delTask(task);
+
+}
+
+function delTask(task) {
+  var taskId = task.id;
+  var subTaskIds = task.subtasks
+  if (subTaskIds) {
+    subTaskIds.map(function(subTaskId){
+      delTask(taskList[subTaskId]);
+    })
+  }
+  delete taskList[taskId];
+}
+
+
 function eventDispatch(action, task, args){
   switch(action){
     case "toggleDone":
@@ -60,6 +81,9 @@ function eventDispatch(action, task, args){
       break;
     case "subTask":
       subTask(task);
+      break;
+    case "delete":
+      deleteTask(task);
       break;
   }
 }
@@ -78,6 +102,9 @@ var Task = React.createClass({
     else if (e.shiftKey && e.keyCode === 9) {
       e.preventDefault();
       eventDispatch("unsubTask", this.props.task);
+      console.log("//////////////////////////////////")
+      console.log(React.findDOMNode(this.refs.task));
+      React.findDOMNode(this.refs.task).focus();
     }
     //subtask
     else if (e.keyCode === 9) {
@@ -85,7 +112,11 @@ var Task = React.createClass({
       eventDispatch("subTask", this.props.task);
     }
     else if (e.ctrlKey && e.keyCode === 68) {
-      eventDispatch("toggleDone", this.props.task)
+      eventDispatch("toggleDone", this.props.task);
+    }
+    else if (e.ctrlKey && e.keyCode === 8) {
+      e.preventDefault();
+      eventDispatch("delete", this.props.task);
     }
     draw();
   },
@@ -96,6 +127,7 @@ var Task = React.createClass({
       return <Task task={taskList[taskId]} />
     })
     return <li><input
+                ref="task"
                 onKeyDown={this.handleKey}
                 onInput={this.save}
                 style={style}
@@ -130,7 +162,7 @@ if(localStorage["taskId"]) {
 
 //Setting up tasklist structure and reloading it from local storage
 var taskList = {"root": {id: "root", subtasks: [0]},
-                0: {id: 0, desc: "", parentId: "root", doneness: false, subtasks: []}};
+                0: {id: 0, desc: "", parentId: "root", doneness: false, subtasks: [], project: ""}};
 if(localStorage["taskList"]) {
   taskList = JSON.parse(localStorage["taskList"]);
 }
@@ -139,6 +171,9 @@ function draw(){
   localStorage["taskId"] = JSON.stringify(taskId);
   localStorage["taskList"] = JSON.stringify(taskList);
   React.render(<TaskList tasks={taskList} />, node);
+  console.log("/////////////////////////////")
+  console.log(document.getElementById(e.target.id));
+  document.getElementById(e.target.id).focus();
 }
 
-draw()
+draw();
