@@ -102,9 +102,7 @@ var Task = React.createClass({
     else if (e.shiftKey && e.keyCode === 9) {
       e.preventDefault();
       eventDispatch("unsubTask", this.props.task);
-      console.log("//////////////////////////////////")
-      console.log(React.findDOMNode(this.refs.task));
-      React.findDOMNode(this.refs.task).focus();
+      focusTaskId = this.props.task.id;
     }
     //subtask
     else if (e.keyCode === 9) {
@@ -120,6 +118,12 @@ var Task = React.createClass({
     }
     draw();
   },
+  componentDidMount: function() {
+    if (this.props.task.id === focusTaskId) {
+      console.log(React.findDOMNode(this.refs.tasks));
+//       React.findDOMNode(this.refs.tasks).focus();
+    }
+  },
   render: function() {
     var task = this.props.task;
     var style = {color: task.doneness ? "red" : ""};
@@ -127,7 +131,7 @@ var Task = React.createClass({
       return <Task task={taskList[taskId]} />
     })
     return <li><input
-                ref="task"
+                ref="tasks"
                 onKeyDown={this.handleKey}
                 onInput={this.save}
                 style={style}
@@ -161,6 +165,7 @@ if(localStorage["taskId"]) {
 }
 
 //Setting up tasklist structure and reloading it from local storage
+var focusTaskId = 0;
 var taskList = {"root": {id: "root", subtasks: [0]},
                 0: {id: 0, desc: "", parentId: "root", doneness: false, subtasks: [], project: ""}};
 if(localStorage["taskList"]) {
@@ -171,9 +176,6 @@ function draw(){
   localStorage["taskId"] = JSON.stringify(taskId);
   localStorage["taskList"] = JSON.stringify(taskList);
   React.render(<TaskList tasks={taskList} />, node);
-  console.log("/////////////////////////////")
-  console.log(document.getElementById(e.target.id));
-  document.getElementById(e.target.id).focus();
 }
 
 draw();
