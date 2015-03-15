@@ -10,11 +10,13 @@ function save(task, args){
 
 function addTask(task){
   var newId = ++taskId;
-  taskList[newId] = {id: newId, desc: "", parentId: task.parentId, doneness: false, subtasks: []};
+  taskList[newId] = {id: newId, desc: "", parentId: task.parentId,
+                     doneness: false, subtasks: [], isProjHeader: false};
 
   var parent = taskList[task.parentId];
   var ix = parent.subtasks.indexOf(task.id) + 1;
   parent.subtasks.splice(ix, 0, newId);
+  focusTaskId = newId;
 }
 
 function unsubTask(task){
@@ -28,6 +30,7 @@ function unsubTask(task){
 
   var ixTask = parent.subtasks.indexOf(task.id);
   parent.subtasks.splice(ixTask, 1);
+  focusTaskId = task.id;
 }
 
 function subTask(task){
@@ -42,6 +45,7 @@ function subTask(task){
     task.parentId = newParentId
     parent.subtasks.splice(ixTask, 1)
   }
+  focusTaskId = task.id;
 }
 
 function deleteTask(task) {
@@ -62,6 +66,17 @@ function delTask(task) {
     })
   }
   delete taskList[taskId];
+}
+
+function toggleProject(task) {
+  task.isProjHeader = !task.isProjHeader;
+  if (task.isProjHeader) {
+    projectList.push(task.id);
+  }
+  else {
+    var ix = projectList.indexOf(task.id);
+    projectList.splice(ix, 1);
+  }
 }
 
 
@@ -85,6 +100,10 @@ function eventDispatch(action, task, args){
     case "delete":
       deleteTask(task);
       break;
+    case "toggleProject":
+      console.log("asdasdfaewd")
+      toggleProject(task);
+      break;
   }
 }
 
@@ -102,26 +121,30 @@ var Task = React.createClass({
     else if (e.shiftKey && e.keyCode === 9) {
       e.preventDefault();
       eventDispatch("unsubTask", this.props.task);
-      focusTaskId = this.props.task.id;
     }
     //subtask
     else if (e.keyCode === 9) {
       e.preventDefault();
       eventDispatch("subTask", this.props.task);
     }
+    //mark done
     else if (e.ctrlKey && e.keyCode === 68) {
       eventDispatch("toggleDone", this.props.task);
     }
+    //delete
     else if (e.ctrlKey && e.keyCode === 8) {
       e.preventDefault();
       eventDispatch("delete", this.props.task);
+    }
+    else if (e.metaKey && e.keyCode === 186){
+      console.log("Jea;lskdgjal;d")
+      eventDispatch("toggleProject", this.props.task);
     }
     draw();
   },
   componentDidMount: function() {
     if (this.props.task.id === focusTaskId) {
-      console.log(React.findDOMNode(this.refs.tasks));
-//       React.findDOMNode(this.refs.tasks).focus();
+      React.findDOMNode(this.refs.tasks).focus();
     }
   },
   render: function() {
@@ -165,9 +188,11 @@ if(localStorage["taskId"]) {
 }
 
 //Setting up tasklist structure and reloading it from local storage
+var projectList = [];
 var focusTaskId = 0;
 var taskList = {"root": {id: "root", subtasks: [0]},
-                0: {id: 0, desc: "", parentId: "root", doneness: false, subtasks: [], project: ""}};
+                0: {id: 0, desc: "", parentId: "root", doneness: false,
+                    subtasks: [], isProjHeader: false}};
 if(localStorage["taskList"]) {
   taskList = JSON.parse(localStorage["taskList"]);
 }
