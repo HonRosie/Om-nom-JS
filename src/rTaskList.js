@@ -101,12 +101,13 @@ function eventDispatch(action, task, args){
       deleteTask(task);
       break;
     case "toggleProject":
+      console.log("asdasdfaewd")
       toggleProject(task);
       break;
   }
 }
 
-var Task = React.createClass({displayName: "Task",
+var Task = React.createClass({
   save: function(e) {
     eventDispatch("save", this.props.task, {value: e.target.value});
     draw();
@@ -135,8 +136,8 @@ var Task = React.createClass({displayName: "Task",
       e.preventDefault();
       eventDispatch("delete", this.props.task);
     }
-    //toggle project
     else if (e.shiftKey && e.keyCode === 186){
+      console.log("Jea;lskdgjal;d")
       eventDispatch("toggleProject", this.props.task);
     }
     draw();
@@ -148,44 +149,40 @@ var Task = React.createClass({displayName: "Task",
   },
   render: function() {
     var task = this.props.task;
-//     if (task.doneness === true){
-//       return false;
-//     }
+    var cName = task.doneness ? "done " : "";
+    cName += task.isProjHeader ? "projHeader " : "";
 
-    var className = task.doneness ? "done " : "";
-    className += task.isProjHeader ? "projHeader " : ""
     var subtasks = task.subtasks.map(function(taskId){
-      return React.createElement(Task, {task: taskList[taskId]})
+      return <Task task={taskList[taskId]} />
     })
-    return React.createElement("li", null, React.createElement("input", {
-                className: className,
-                ref: "tasks",
-                onKeyDown: this.handleKey,
-                onInput: this.save,
-                value: task.desc}),
-                React.createElement("ul", null,
-                  subtasks
-                )
-          )
+
+    return <li><input
+                className={cName}
+                ref="tasks"
+                onKeyDown={this.handleKey}
+                onInput={this.save}
+                value={task.desc}></input>
+                <ul>
+                  {subtasks}
+                </ul>
+          </li>
   }
 });
 
-var TaskList = React.createClass({displayName: "TaskList",
+var TaskList = React.createClass({
   render: function() {
     var roots = this.props.tasks["root"].subtasks;
 
     var tasks = roots.map(function(taskId){
-      return React.createElement(Task, {task: taskList[taskId]})
+      return <Task task={taskList[taskId]} />
     })
 
-    return React.createElement("ul", null, tasks);
+    return <ul>{tasks}</ul>;
   },
 });
 
 
 localStorage.clear();
-var focusTaskId = 0;
-
 
 //Setting up task Ids and reloading from local storage
 var taskId = 0;
@@ -194,6 +191,8 @@ if(localStorage["taskId"]) {
 }
 
 //Setting up tasklist structure and reloading it from local storage
+var projectList = [];
+var focusTaskId = 0;
 var taskList = {"root": {id: "root", subtasks: [0]},
                 0: {id: 0, desc: "", parentId: "root", doneness: false,
                     subtasks: [], isProjHeader: false}};
@@ -201,16 +200,10 @@ if(localStorage["taskList"]) {
   taskList = JSON.parse(localStorage["taskList"]);
 }
 
-var projectList = [];
-if(localStorage["projectList"]) {
-  taskList = JSON.parse(localStorage["projectList"]);
-}
-
 function draw(){
   localStorage["taskId"] = JSON.stringify(taskId);
   localStorage["taskList"] = JSON.stringify(taskList);
-  localStorage["projectList"] = JSON.stringify(projectList);
-  React.render(React.createElement(TaskList, {tasks: taskList}), node);
+  React.render(<TaskList tasks={taskList} />, node);
 }
 
 draw();
