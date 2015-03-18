@@ -101,7 +101,6 @@ function eventDispatch(action, task, args){
       deleteTask(task);
       break;
     case "toggleProject":
-      console.log("asdasdfaewd")
       toggleProject(task);
       break;
   }
@@ -137,7 +136,6 @@ var Task = React.createClass({
       eventDispatch("delete", this.props.task);
     }
     else if (e.shiftKey && e.keyCode === 186){
-      console.log("Jea;lskdgjal;d")
       eventDispatch("toggleProject", this.props.task);
     }
     draw();
@@ -149,39 +147,56 @@ var Task = React.createClass({
   },
   render: function() {
     var task = this.props.task;
+
     var cName = task.doneness ? "done " : "";
     cName += task.isProjHeader ? "projHeader " : "";
+
+    if (task.doneness && !viewDone) {
+      return null;
+    }
 
     var subtasks = task.subtasks.map(function(taskId){
       return <Task task={taskList[taskId]} />
     })
 
-    return <li><input
+    return <li>
+              <input
                 className={cName}
                 ref="tasks"
                 onKeyDown={this.handleKey}
                 onInput={this.save}
-                value={task.desc}></input>
-                <ul>
-                  {subtasks}
-                </ul>
-          </li>
+                value={task.desc}>
+              </input>
+              <ul>
+                {subtasks}
+              </ul>
+           </li>
   }
 });
 
 var TaskList = React.createClass({
+  handleUserInput: function() {
+    viewDone = this.refs.viewDoneCheck.getDOMNode().checked;
+    draw()
+  },
   render: function() {
     var roots = this.props.tasks["root"].subtasks;
-
     var tasks = roots.map(function(taskId){
       return <Task task={taskList[taskId]} />
     })
 
-    return <ul>{tasks}</ul>;
+    return <ul>
+              {tasks}
+              <input
+                ref="viewDoneCheck"
+                type="checkbox"
+                onChange={this.handleUserInput}>
+              </input>
+           </ul>
   },
 });
 
-
+var viewDone = false;
 localStorage.clear();
 
 //Setting up task Ids and reloading from local storage
