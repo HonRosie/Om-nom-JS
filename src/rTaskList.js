@@ -140,6 +140,10 @@ var Task = React.createClass({
     }
     draw();
   },
+  handleButton: function(e) {
+    projRootId = projRootId === "root" ? this.props.task.id : "root";
+    draw();
+  },
   componentDidMount: function() {
     if (this.props.task.id === focusTaskId) {
       React.findDOMNode(this.refs.tasks).focus();
@@ -147,30 +151,40 @@ var Task = React.createClass({
   },
   render: function() {
     var task = this.props.task;
-
-    var cName = task.doneness ? "done " : "";
-    cName += task.isProjHeader ? "projHeader " : "";
+    var gotoProj;
 
     if (task.doneness && !viewDone) {
       return null;
     }
+    else {
+      var cName = task.doneness ? "done " : "";
+      cName += task.isProjHeader ? "projHeader " : "";
 
-    var subtasks = task.subtasks.map(function(taskId){
-      return <Task task={taskList[taskId]} />
-    })
+      if (task.isProjHeader) {
+        gotoProj = <button
+                      name="button"
+                      onClick={this.handleButton}>
+                   </button>
+      }
 
-    return <li>
-              <input
-                className={cName}
-                ref="tasks"
-                onKeyDown={this.handleKey}
-                onInput={this.save}
-                value={task.desc}>
-              </input>
-              <ul>
-                {subtasks}
-              </ul>
-           </li>
+      var subtasks = task.subtasks.map(function(taskId){
+        return <Task task={taskList[taskId]} />
+      })
+
+      return <li>
+                {gotoProj}
+                <input
+                  className={cName}
+                  ref="tasks"
+                  onKeyDown={this.handleKey}
+                  onInput={this.save}
+                  value={task.desc}>
+                </input>
+                <ul>
+                  {subtasks}
+                </ul>
+             </li>
+    }
   }
 });
 
@@ -180,24 +194,31 @@ var TaskList = React.createClass({
     draw()
   },
   render: function() {
-    var roots = this.props.tasks["root"].subtasks;
-    var tasks = roots.map(function(taskId){
-      return <Task task={taskList[taskId]} />
-    })
+    if (projRootId === "root") {
+      var roots = this.props.tasks[projRootId].subtasks;
+      var tasks = roots.map(function(taskId){
+        return <Task task={taskList[taskId]} />
+      })
+    }
+    else {
+      var tasks = <Task task={taskList[projRootId]} />
+    }
 
     return <ul>
-              {tasks}
               <input
                 ref="viewDoneCheck"
                 type="checkbox"
                 onChange={this.handleUserInput}>
               </input>
+              {tasks}
+
            </ul>
   },
 });
 
+var projRootId = "root";
 var viewDone = false;
-localStorage.clear();
+// localStorage.clear();
 
 //Setting up task Ids and reloading from local storage
 var taskId = 0;
