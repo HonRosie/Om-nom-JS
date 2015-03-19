@@ -140,8 +140,16 @@ var Task = React.createClass({
     }
     draw();
   },
-  handleButton: function(e) {
+  handleButton: function() {
     projRootId = projRootId === "root" ? this.props.task.id : "root";
+    draw();
+  },
+  handleDateKeys: function(e) {
+    console.log("Handling date keys");
+    if (e.keyCode === 13) {
+      this.props.task.duedate = e.target.value;
+    }
+    debugger;
     draw();
   },
   componentDidMount: function() {
@@ -152,6 +160,7 @@ var Task = React.createClass({
   render: function() {
     var task = this.props.task;
     var gotoProj;
+    var duedate;
 
     if (task.doneness && !viewDone) {
       return null;
@@ -167,6 +176,7 @@ var Task = React.createClass({
                    </button>
       }
 
+
       var subtasks = task.subtasks.map(function(taskId){
         return <Task task={taskList[taskId]} />
       })
@@ -179,6 +189,10 @@ var Task = React.createClass({
                   onKeyDown={this.handleKey}
                   onInput={this.save}
                   value={task.desc}>
+                </input>
+                <input
+                  onKeyDown={this.handleDateKeys}
+                  value={task.duedate}>
                 </input>
                 <ul>
                   {subtasks}
@@ -195,7 +209,7 @@ var TaskList = React.createClass({
   },
   render: function() {
     if (projRootId === "root") {
-      var roots = this.props.tasks[projRootId].subtasks;
+          var roots = this.props.tasks[projRootId].subtasks;
       var tasks = roots.map(function(taskId){
         return <Task task={taskList[taskId]} />
       })
@@ -209,6 +223,7 @@ var TaskList = React.createClass({
                 ref="viewDoneCheck"
                 type="checkbox"
                 onChange={this.handleUserInput}>
+                View Done
               </input>
               {tasks}
 
@@ -231,7 +246,7 @@ var projectList = [];
 var focusTaskId = 0;
 var taskList = {"root": {id: "root", subtasks: [0]},
                 0: {id: 0, desc: "", parentId: "root", doneness: false,
-                    subtasks: [], isProjHeader: false}};
+                    subtasks: [], isProjHeader: false, duedate: ""}};
 if(localStorage["taskList"]) {
   taskList = JSON.parse(localStorage["taskList"]);
 }
