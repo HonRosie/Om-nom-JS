@@ -79,6 +79,10 @@ function toggleProject(task) {
   }
 }
 
+function setDate(task) {
+  task.duedate = e.target.value;
+}
+
 
 function eventDispatch(action, task, args){
   switch(action){
@@ -102,6 +106,9 @@ function eventDispatch(action, task, args){
       break;
     case "toggleProject":
       toggleProject(task);
+      break;
+    case "setDate":
+      setDate(task);
       break;
   }
 }
@@ -145,11 +152,9 @@ var Task = React.createClass({
     draw();
   },
   handleDateKeys: function(e) {
-    console.log("Handling date keys");
     if (e.keyCode === 13) {
-      this.props.task.duedate = e.target.value;
+      eventDispatch("setDate", this.props.task);
     }
-    debugger;
     draw();
   },
   componentDidMount: function() {
@@ -162,7 +167,8 @@ var Task = React.createClass({
     var gotoProj;
     var duedate;
 
-    if (task.doneness && !viewDone) {
+    debugger;
+    if (task.doneness && !this.props.viewDone) {
       return null;
     }
     else {
@@ -177,8 +183,10 @@ var Task = React.createClass({
       }
 
 
+      var viewDone = this.props.viewDone;
       var subtasks = task.subtasks.map(function(taskId){
-        return <Task task={taskList[taskId]} />
+        return <Task task={taskList[taskId]}
+                     viewDone={viewDone} />
       })
 
       return <li>
@@ -202,37 +210,81 @@ var Task = React.createClass({
   }
 });
 
-var TaskList = React.createClass({
+var TaskListFilters = React.createClass({
   handleUserInput: function() {
-    viewDone = this.refs.viewDoneCheck.getDOMNode().checked;
-    draw()
+    this.props.viewDone(
+      this.refs.viewDoneCheck.getDOMNode().checked
+    );
   },
   render: function() {
+    return (
+          <input
+            ref="viewDoneCheck"
+            type="checkbox"
+            onChange={this.handleUserInput}>
+            View Done
+          </input>
+    );
+  }
+});
+
+var TaskList = React.createClass({
+  render: function() {
+    debugger;
+    var viewDone = this.props.viewDone;
     if (projRootId === "root") {
-          var roots = this.props.tasks[projRootId].subtasks;
+      var roots = this.props.tasks[projRootId].subtasks;
       var tasks = roots.map(function(taskId){
-        return <Task task={taskList[taskId]} />
+        return <Task task={taskList[taskId]}
+                     viewDone={viewDone} />
       })
     }
     else {
-      var tasks = <Task task={taskList[projRootId]} />
+      var tasks = <Task task={taskList[projRootId]}
+                        viewDone={this.props.viewDone} />
     }
 
     return <ul>
-              <input
-                ref="viewDoneCheck"
-                type="checkbox"
-                onChange={this.handleUserInput}>
-                View Done
-              </input>
               {tasks}
-
            </ul>
   },
 });
 
+
+var FilterTaskList = React.createClass({
+  getInitialState: function() {
+    return {
+      viewDone: false
+    };
+  },
+  handleUserInput: function(viewDone) {
+    this.setState({
+      viewDone: viewDone
+    });
+  },
+  render: function() {
+    return (
+      <div>
+          <TaskListFilters viewDone={this.handleUserInput} />
+          <TaskList tasks={this.props.tasks}
+                    viewDone={this.state.viewDone} />
+      </div>
+      );
+  }
+});
+
+var assignDate = React.createClass({
+  render: function() {
+    <input
+      type="text"
+    >
+    </input>
+  }
+});
+
+
 var projRootId = "root";
-var viewDone = false;
+// var viewDone = false;
 // localStorage.clear();
 
 //Setting up task Ids and reloading from local storage
@@ -254,7 +306,7 @@ if(localStorage["taskList"]) {
 function draw(){
   localStorage["taskId"] = JSON.stringify(taskId);
   localStorage["taskList"] = JSON.stringify(taskList);
-  React.render(<TaskList tasks={taskList} />, node);
+  React.render(<FilterTaskList tasks={taskList} />, node);
 }
 
 draw();
