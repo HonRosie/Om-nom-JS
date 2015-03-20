@@ -171,6 +171,7 @@ var Task = React.createClass({
     var gotoProj;
     var duedate;
 
+    debugger;
     if (task.doneness && !this.props.viewDone) {
       return null;
     }
@@ -216,7 +217,8 @@ var Task = React.createClass({
 var TaskListFilters = React.createClass({
   handleUserInput: function() {
     this.props.onUserInput(
-      this.refs.viewDoneCheck.getDOMNode().checked
+      this.refs.viewDoneCheck.getDOMNode().checked,
+      this.props.projRootId
     );
   },
   render: function() {
@@ -233,6 +235,7 @@ var TaskListFilters = React.createClass({
 
 var TaskList = React.createClass({
   render: function() {
+    debugger;
     var viewDone = this.props.viewDone;
     var projRootId = this.props.projRootId;
     var onUserInput = this.props.onUserInput;
@@ -263,7 +266,8 @@ var FilterTaskList = React.createClass({
   render: function() {
     return (
       <div>
-          <TaskListFilters onUserInput={this.props.onUserInput} />
+          <TaskListFilters onUserInput={this.props.onUserInput}
+                           projRootId={this.props.projRootId} />
           <TaskList tasks={this.props.tasks}
                     viewDone={this.props.viewDone}
                     projRootId={this.props.projRootId}
@@ -286,6 +290,7 @@ var AssignDate = React.createClass({
 
 var ProjView = React.createClass({
   getInitialState: function() {
+    debugger;
     return {
       viewDone: false,
       projRootId: "root"
