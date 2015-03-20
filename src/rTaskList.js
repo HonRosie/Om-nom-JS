@@ -148,8 +148,12 @@ var Task = React.createClass({
     draw();
   },
   handleButton: function() {
-    projRootId = projRootId === "root" ? this.props.task.id : "root";
-    draw();
+//     projRootId = projRootId === "root" ? this.props.task.id : "root";
+//     draw();
+    this.props.onUserInput(
+      this.props.viewDone,
+      this.props.projRootId === "root" ? this.props.task.id : "root"
+    )
   },
   handleDateKeys: function(e) {
     if (e.keyCode === 13) {
@@ -167,7 +171,6 @@ var Task = React.createClass({
     var gotoProj;
     var duedate;
 
-    debugger;
     if (task.doneness && !this.props.viewDone) {
       return null;
     }
@@ -212,7 +215,7 @@ var Task = React.createClass({
 
 var TaskListFilters = React.createClass({
   handleUserInput: function() {
-    this.props.setDone(
+    this.props.onUserInput(
       this.refs.viewDoneCheck.getDOMNode().checked
     );
   },
@@ -230,18 +233,23 @@ var TaskListFilters = React.createClass({
 
 var TaskList = React.createClass({
   render: function() {
-    debugger;
     var viewDone = this.props.viewDone;
+    var projRootId = this.props.projRootId;
+    var onUserInput = this.props.onUserInput;
     if (projRootId === "root") {
       var roots = this.props.tasks[projRootId].subtasks;
       var tasks = roots.map(function(taskId){
         return <Task task={taskList[taskId]}
-                     viewDone={viewDone} />
+                     viewDone={viewDone}
+                     projRootId={projRootId}
+                     onUserInput={onUserInput} />
       })
     }
     else {
       var tasks = <Task task={taskList[projRootId]}
-                        viewDone={this.props.viewDone} />
+                        viewDone={viewDone}
+                        projRootId={projRootId}
+                        onUserInput={onUserInput} />
     }
 
     return <ul>
@@ -255,9 +263,11 @@ var FilterTaskList = React.createClass({
   render: function() {
     return (
       <div>
-          <TaskListFilters setDone={this.props.setDone} />
+          <TaskListFilters onUserInput={this.props.onUserInput} />
           <TaskList tasks={this.props.tasks}
-                    viewDone={this.props.viewDone} />
+                    viewDone={this.props.viewDone}
+                    projRootId={this.props.projRootId}
+                    onUserInput={this.props.onUserInput} />
       </div>
       );
   }
@@ -277,12 +287,15 @@ var AssignDate = React.createClass({
 var ProjView = React.createClass({
   getInitialState: function() {
     return {
-      viewDone: false
+      viewDone: false,
+      projRootId: "root"
     };
   },
-  handleUserInput: function(viewDone) {
+  handleUserInput: function(viewDone, projRootId) {
+    debugger;
     this.setState({
-      viewDone: viewDone
+      viewDone: viewDone,
+      projRootId: projRootId
     });
   },
   render: function() {
@@ -291,13 +304,14 @@ var ProjView = React.createClass({
         <AssignDate />
         <FilterTaskList tasks={this.props.tasks}
                         viewDone={this.state.viewDone}
-                        setDone={this.handleUserInput} />
+                        projRootId={this.state.projRootId}
+                        onUserInput={this.handleUserInput} />
       </div>
     )
   }
 });
 
-var projRootId = "root";
+// var projRootId = "root";
 // var viewDone = false;
 // localStorage.clear();
 
