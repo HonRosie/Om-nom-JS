@@ -21,16 +21,18 @@ function addTask(task){
 
 function unsubTask(task){
   var parent = taskList[task.parentId];
-  var parentParentId = parent.parentId;
-  var parentParent = taskList[parentParentId];
+  if (parent.id != "root"){
+    var parentParentId = parent.parentId;
+    var parentParent = taskList[parentParentId];
 
-  var ixParent = parentParent.subtasks.indexOf(parent.id);
-  parentParent.subtasks.splice(ixParent+1, 0, task.id);
-  task.parentId = parentParentId;
+    var ixParent = parentParent.subtasks.indexOf(parent.id);
+    parentParent.subtasks.splice(ixParent+1, 0, task.id);
+    task.parentId = parentParentId;
 
-  var ixTask = parent.subtasks.indexOf(task.id);
-  parent.subtasks.splice(ixTask, 1);
-  focusTaskId = task.id;
+    var ixTask = parent.subtasks.indexOf(task.id);
+    parent.subtasks.splice(ixTask, 1);
+    focusTaskId = task.id;
+  }
 }
 
 function subTask(task){
@@ -148,12 +150,8 @@ var Task = React.createClass({
     draw();
   },
   handleButton: function() {
-//     projRootId = projRootId === "root" ? this.props.task.id : "root";
-//     draw();
-    this.props.onUserInput(
-      this.props.viewDone,
-      this.props.projRootId === "root" ? this.props.task.id : "root"
-    )
+    projRootId = projRootId === "root" ? this.props.task.id : "root";
+    draw();
   },
   handleDateKeys: function(e) {
     if (e.keyCode === 13) {
@@ -171,8 +169,7 @@ var Task = React.createClass({
     var gotoProj;
     var duedate;
 
-    debugger;
-    if (task.doneness && !this.props.viewDone) {
+    if (task.doneness && !viewDone) {
       return null;
     }
     else {
@@ -187,7 +184,6 @@ var Task = React.createClass({
       }
 
 
-      var viewDone = this.props.viewDone;
       var subtasks = task.subtasks.map(function(taskId){
         return <Task task={taskList[taskId]}
                      viewDone={viewDone} />
@@ -216,10 +212,8 @@ var Task = React.createClass({
 
 var TaskListFilters = React.createClass({
   handleUserInput: function() {
-    this.props.onUserInput(
-      this.refs.viewDoneCheck.getDOMNode().checked,
-      this.props.projRootId
-    );
+    viewDone = this.refs.viewDoneCheck.getDOMNode().checked;
+    draw();
   },
   render: function() {
     return (
@@ -235,24 +229,16 @@ var TaskListFilters = React.createClass({
 
 var TaskList = React.createClass({
   render: function() {
-    debugger;
-    var viewDone = this.props.viewDone;
-    var projRootId = this.props.projRootId;
-    var onUserInput = this.props.onUserInput;
     if (projRootId === "root") {
       var roots = this.props.tasks[projRootId].subtasks;
       var tasks = roots.map(function(taskId){
         return <Task task={taskList[taskId]}
-                     viewDone={viewDone}
-                     projRootId={projRootId}
-                     onUserInput={onUserInput} />
+                     viewDone={viewDone} />
       })
     }
     else {
       var tasks = <Task task={taskList[projRootId]}
-                        viewDone={viewDone}
-                        projRootId={projRootId}
-                        onUserInput={onUserInput} />
+                        viewDone={viewDone} />
     }
 
     return <ul>
@@ -266,12 +252,8 @@ var FilterTaskList = React.createClass({
   render: function() {
     return (
       <div>
-          <TaskListFilters onUserInput={this.props.onUserInput}
-                           projRootId={this.props.projRootId} />
-          <TaskList tasks={this.props.tasks}
-                    viewDone={this.props.viewDone}
-                    projRootId={this.props.projRootId}
-                    onUserInput={this.props.onUserInput} />
+          <TaskListFilters />
+          <TaskList tasks={this.props.tasks} />
       </div>
       );
   }
@@ -289,35 +271,19 @@ var AssignDate = React.createClass({
 });
 
 var ProjView = React.createClass({
-  getInitialState: function() {
-    debugger;
-    return {
-      viewDone: false,
-      projRootId: "root"
-    };
-  },
-  handleUserInput: function(viewDone, projRootId) {
-    debugger;
-    this.setState({
-      viewDone: viewDone,
-      projRootId: projRootId
-    });
-  },
   render: function() {
     return (
       <div>
         <AssignDate />
         <FilterTaskList tasks={this.props.tasks}
-                        viewDone={this.state.viewDone}
-                        projRootId={this.state.projRootId}
-                        onUserInput={this.handleUserInput} />
+                        viewDone={viewDone} />
       </div>
     )
   }
 });
 
-// var projRootId = "root";
-// var viewDone = false;
+var projRootId = "root";
+var viewDone = false;
 // localStorage.clear();
 
 //Setting up task Ids and reloading from local storage
