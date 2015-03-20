@@ -212,7 +212,7 @@ var Task = React.createClass({
 
 var TaskListFilters = React.createClass({
   handleUserInput: function() {
-    this.props.viewDone(
+    this.props.setDone(
       this.refs.viewDoneCheck.getDOMNode().checked
     );
   },
@@ -252,6 +252,29 @@ var TaskList = React.createClass({
 
 
 var FilterTaskList = React.createClass({
+  render: function() {
+    return (
+      <div>
+          <TaskListFilters setDone={this.props.setDone} />
+          <TaskList tasks={this.props.tasks}
+                    viewDone={this.props.viewDone} />
+      </div>
+      );
+  }
+});
+
+var AssignDate = React.createClass({
+  render: function() {
+    return (
+      <input
+        type="text"
+      >
+      </input>
+    )
+  }
+});
+
+var ProjView = React.createClass({
   getInitialState: function() {
     return {
       viewDone: false
@@ -265,23 +288,14 @@ var FilterTaskList = React.createClass({
   render: function() {
     return (
       <div>
-          <TaskListFilters viewDone={this.handleUserInput} />
-          <TaskList tasks={this.props.tasks}
-                    viewDone={this.state.viewDone} />
+        <AssignDate />
+        <FilterTaskList tasks={this.props.tasks}
+                        viewDone={this.state.viewDone}
+                        setDone={this.handleUserInput} />
       </div>
-      );
+    )
   }
 });
-
-var assignDate = React.createClass({
-  render: function() {
-    <input
-      type="text"
-    >
-    </input>
-  }
-});
-
 
 var projRootId = "root";
 // var viewDone = false;
@@ -306,7 +320,7 @@ if(localStorage["taskList"]) {
 function draw(){
   localStorage["taskId"] = JSON.stringify(taskId);
   localStorage["taskList"] = JSON.stringify(taskList);
-  React.render(<FilterTaskList tasks={taskList} />, node);
+  React.render(<ProjView tasks={taskList} />, node);
 }
 
 draw();
