@@ -6,10 +6,8 @@ This was a rebuild of Om nom, and continuing development for the web application
 Currently the application is entirely client side with tasks stored in a data structure and saved to the browser cache.
 
 ##Instructions to run
-To run the trading module:
-```console
-python run.py
-```
+To run OmnomJS
+Assuming you already have React setup, input the file path to where index.html is on your machine.
 
 
 ##Supported features so far
