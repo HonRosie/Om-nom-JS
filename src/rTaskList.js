@@ -81,8 +81,8 @@ function toggleProject(task) {
   }
 }
 
-function setDate(task) {
-  task.duedate = e.target.value;
+function setDate(task, args) {
+  task.duedate = args.value;
 }
 
 
@@ -110,7 +110,7 @@ function eventDispatch(action, task, args){
       toggleProject(task);
       break;
     case "setDate":
-      setDate(task);
+      setDate(task, args);
       break;
   }
 }
@@ -154,9 +154,7 @@ var Task = React.createClass({
     draw();
   },
   handleDateKeys: function(e) {
-    if (e.keyCode === 13) {
-      eventDispatch("setDate", this.props.task);
-    }
+    eventDispatch("setDate", this.props.task, {value: e.target.value});
     draw();
   },
   componentDidMount: function() {
@@ -199,7 +197,7 @@ var Task = React.createClass({
                   value={task.desc}>
                 </input>
                 <input
-                  onKeyDown={this.handleDateKeys}
+                  onInput={this.handleDateKeys}
                   value={task.duedate}>
                 </input>
                 <ul>
