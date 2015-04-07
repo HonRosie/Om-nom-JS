@@ -6,8 +6,9 @@ This was a rebuild of Om nom, and continuing development for the web application
 Currently the application is entirely client side with tasks stored in a data structure and saved to the browser cache.
 
 ##Instructions to run
-To run OmnomJS
-Assuming you already have React setup, input the file path to where index.html is on your machine.
+To run OmnomJS:
+
+Assuming you already have React setup, you can just input the file path to where index.html is on your machine into the address bar of your browser
 
 
 ##Supported features so far
