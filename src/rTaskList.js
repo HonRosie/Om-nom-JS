@@ -12,7 +12,6 @@ function addTask(task){
   var newId = ++taskId;
   taskList[newId] = {id: newId, desc: "", parentId: task.parentId,
                      doneness: false, subtasks: [], isProjHeader: false};
-
   var parent = taskList[task.parentId];
   var ix = parent.subtasks.indexOf(task.id) + 1;
   parent.subtasks.splice(ix, 0, newId);
@@ -85,6 +84,10 @@ function setDate(task, args) {
   task.duedate = args.value;
 }
 
+function assignDate(task) {
+  task.toAssignDate = true;
+}
+
 
 function eventDispatch(action, task, args){
   switch(action){
@@ -111,6 +114,9 @@ function eventDispatch(action, task, args){
       break;
     case "setDate":
       setDate(task, args);
+      break;
+    case "assignDate":
+      assignDate(task);
       break;
   }
 }
@@ -157,8 +163,11 @@ var Task = React.createClass({
     eventDispatch("setDate", this.props.task, {value: e.target.value});
     draw();
   },
+  assignDate: function() {
+    eventDispatch("assignDate", this.props.task);
+  },
   componentDidMount: function() {
-    if (this.props.task.id === focusTaskId) {
+    if (this.props.task.id === d) {
       React.findDOMNode(this.refs.tasks).focus();
     }
   },
@@ -189,6 +198,13 @@ var Task = React.createClass({
 
       return <li>
                 {gotoProj}
+                <input
+                  className="assignDate"
+                  type="checkbox"
+                  checked={task.toAssignDate}
+                  onChange={this.assignDate}
+                  >
+                </input>
                 <input
                   className={cName}
                   ref="tasks"
@@ -258,11 +274,22 @@ var FilterTaskList = React.createClass({
 });
 
 var AssignDate = React.createClass({
+  assignDate: function(e) {
+    var roots = this.props.tasks["root"].subtasks;
+    roots.map(function(taskId){
+      if (taskList[taskId].toAssignDate == true) {
+        taskList[taskId].duedate = "foo"
+        taskList[taskId].toAssignDate = false
+      }
+      draw();
+    })
+  },
   render: function() {
     return (
       <input
         type="text"
-      >
+        onKeyDown={this.assignDate}>
+      Assign Date
       </input>
     )
   }
@@ -272,7 +299,7 @@ var ProjView = React.createClass({
   render: function() {
     return (
       <div>
-        <AssignDate />
+        <AssignDate tasks={this.props.tasks}/>
         <FilterTaskList tasks={this.props.tasks}
                         viewDone={viewDone} />
       </div>
@@ -292,10 +319,11 @@ if(localStorage["taskId"]) {
 
 //Setting up tasklist structure and reloading it from local storage
 var projectList = [];
-var focusTaskId = 0;
+var d = 0;
 var taskList = {"root": {id: "root", subtasks: [0]},
                 0: {id: 0, desc: "", parentId: "root", doneness: false,
-                    subtasks: [], isProjHeader: false, duedate: ""}};
+                    subtasks: [], isProjHeader: true, duedate: "", toAssignDate: false}};
+
 if(localStorage["taskList"]) {
   taskList = JSON.parse(localStorage["taskList"]);
 }
