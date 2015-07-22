@@ -85,7 +85,7 @@ function setDate(task, args) {
 }
 
 function assignDate(task) {
-  task.toAssignDate = true;
+  task.toAssignDate = !task.toAssignDate;
 }
 
 
@@ -167,7 +167,8 @@ var Task = React.createClass({
     eventDispatch("assignDate", this.props.task);
   },
   componentDidMount: function() {
-    if (this.props.task.id === d) {
+    if (this.props.task.id === focusTaskId) {
+      debugger;
       React.findDOMNode(this.refs.tasks).focus();
     }
   },
@@ -193,6 +194,7 @@ var Task = React.createClass({
 
       var subtasks = task.subtasks.map(function(taskId){
         return <Task task={taskList[taskId]}
+                     key={taskId}
                      viewDone={viewDone} />
       })
 
@@ -247,6 +249,7 @@ var TaskList = React.createClass({
       var roots = this.props.tasks[projRootId].subtasks;
       var tasks = roots.map(function(taskId){
         return <Task task={taskList[taskId]}
+                     key={taskId}
                      viewDone={viewDone} />
       })
     }
@@ -319,10 +322,10 @@ if(localStorage["taskId"]) {
 
 //Setting up tasklist structure and reloading it from local storage
 var projectList = [];
-var d = 0;
+var focusTaskId = 0;
 var taskList = {"root": {id: "root", subtasks: [0]},
                 0: {id: 0, desc: "", parentId: "root", doneness: false,
-                    subtasks: [], isProjHeader: true, duedate: "", toAssignDate: false}};
+                    subtasks: [], isProjHeader: false, duedate: "", toAssignDate: false}};
 
 if(localStorage["taskList"]) {
   taskList = JSON.parse(localStorage["taskList"]);
